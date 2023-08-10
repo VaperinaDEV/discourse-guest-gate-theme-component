@@ -8,11 +8,11 @@
   @dismissable={{if (theme-setting 'dismissable_false') false true}}
 >
   <:body>
-    {{#if (theme-setting 'custom_gate_enabled') }}
+    {{#if (theme-setting 'custom_gate_enabled')}}
       <div class="custom-gate-content">
         <img src="{{theme-setting 'custom_gate_image'}}"/>
         <h2>{{theme-i18n "custom_gate.big_text"}}</h2>
-        <p>{{html-safe (theme-i18n "custom_gate.little_text") }}</p>
+        <p>{{html-safe (theme-i18n "custom_gate.little_text")}}</p>
       </div>
     
     {{else}}
@@ -35,7 +35,7 @@
           @label={{theme-prefix "guest_gate.sso_log_in"}}
           @action={{route-action "showLogin"}}
         />
-        {{#if (theme-setting 'enable_discourse_connect_signup') }}
+        {{#if (theme-setting 'enable_discourse_connect_signup')}}
           <DButton
             @class={{theme-setting "signup_button_style"}}
             @icon={{theme-setting "signup_icon"}}
@@ -49,7 +49,7 @@
         <a href {{on "click" this.ssoLoginGate}}>
           {{theme-i18n "guest_gate.sso_log_in"}}
         </a>
-        {{#if (theme-setting 'enable_discourse_connect_signup') }}
+        {{#if (theme-setting 'enable_discourse_connect_signup')}}
           {{theme-i18n "guest_gate.or"}}
           <a href="{{theme-setting 'discourse_connect_signup_url'}}">
             {{theme-i18n "guest_gate.sso_sign_up"}}
@@ -57,10 +57,10 @@
         {{/if}}
       {{/if}}
               
-      {{else}}
+    {{else}}
               
-      {{#if (theme-setting 'use_gate_buttons') }}
-        {{#if (theme-setting 'custom_url_enabled') }}
+      {{#if (theme-setting 'use_gate_buttons')}}
+        {{#if (theme-setting 'custom_url_enabled')}}
           <DButton
             @class={{theme-setting "login_button_style"}}
             @icon={{theme-setting "login_icon"}}
@@ -73,9 +73,9 @@
             @label={{theme-prefix "guest_gate.sign_up"}}
             @href={{theme-setting "custom_signup_url"}}
           />
-        
+          
         {{else}}
-        
+          
           <DButton
             @class={{theme-setting "login_button_style"}}
             @icon={{theme-setting "login_icon"}}
@@ -89,24 +89,28 @@
             @action={{route-action "showCreateAccount"}}
           />
         {{/if}}
-          
+            
       {{else}}
-        
-        {{#if (theme-setting 'custom_url_enabled') }}
+          
+        {{#if (theme-setting 'custom_url_enabled')}}
           <a href="{{theme-setting 'custom_login_url'}}">
             {{theme-i18n "guest_gate.log_in"}}
           </a>
+
           {{theme-i18n "guest_gate.or"}}
+          
           <a href="{{theme-setting 'custom_signup_url'}}">
             {{theme-i18n "guest_gate.sign_up"}}
           </a>
-            
+              
         {{else}}
-          
+            
           <a href {{on "click" this.showLoginGate}}>
             {{theme-i18n "guest_gate.log_in"}}
           </a>
+
           {{theme-i18n "guest_gate.or"}}
+
           <a href {{on "click" this.showCreateAccountGate}}>
             {{theme-i18n "guest_gate.sign_up"}}
           </a>
