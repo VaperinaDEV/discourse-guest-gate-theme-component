@@ -36,9 +36,4 @@ export default class extends Component {
       titleAriaElementId: "create-account-title",
     });
   }
-  
-  @action
-  externalLogin(provider) {
-    getOwner(this).lookup("controller:login").send('externalLogin', provider);
-  }
 }
