@@ -1,15 +1,18 @@
 import Component from "@glimmer/component";
 import { action } from "@ember/object";
 import getURL from "discourse-common/lib/get-url";
+import LoginModal from "discourse/components/modal/login";
 import showModal from "discourse/lib/show-modal";
 import { getOwner } from "discourse-common/lib/get-owner";
+import { inject as service } from "@ember/service";
 
 export default class extends Component {
+  @service modal;
   
   @action
   showLoginGate(event) {
     event?.preventDefault();
-    showModal("login");
+    this.modal.show(LoginModal);
   }
     
   @action
@@ -24,6 +27,7 @@ export default class extends Component {
     event?.preventDefault();
     showModal("createAccount", {
       modalClass: "create-account",
+      titleAriaElementId: "create-account-title",
     });
   }
   
@@ -31,5 +35,4 @@ export default class extends Component {
   externalLogin(provider) {
     getOwner(this).lookup("controller:login").send('externalLogin', provider);
   }
-  
 }
