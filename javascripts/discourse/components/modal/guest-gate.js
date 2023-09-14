@@ -12,7 +12,13 @@ export default class extends Component {
   @action
   showLoginGate(event) {
     event?.preventDefault();
-    this.modal.show(LoginModal);
+    this.modal.show(LoginModal, {
+      model: {
+        isExternalLogin: true,
+        externalLoginMethod: this.externalLoginMethods[0],
+        signup: true,
+      },
+    });
   }
     
   @action
