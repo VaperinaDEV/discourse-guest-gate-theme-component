@@ -15,7 +15,6 @@ export default class extends Component {
     this.modal.show(LoginModal, {
       model: {
         isExternalLogin: true,
-        externalLoginMethod: this.externalLoginMethods[0],
         signup: true,
       },
     });
