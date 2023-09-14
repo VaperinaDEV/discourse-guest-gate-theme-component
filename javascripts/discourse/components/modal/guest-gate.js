@@ -14,8 +14,13 @@ export default class extends Component {
     event?.preventDefault();
     this.modal.show(LoginModal, {
       model: {
-        isExternalLogin: true,
-        signup: true,
+        ...(this.includeExternalLoginMethods && {
+          isExternalLogin: true,
+          externalLoginMethod: this.externalLoginMethods[0],
+        }),
+        showNotActivated: (props) => this.send("showNotActivated", props),
+        showCreateAccount: (props) => this.send("showCreateAccount", props),
+        canSignUp: this.controller.canSignUp,
       },
     });
   }
