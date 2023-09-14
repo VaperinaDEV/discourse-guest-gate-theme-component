@@ -36,4 +36,16 @@ export default class extends Component {
       titleAriaElementId: "create-account-title",
     });
   }
+  
+  @action
+  externalLogin(provider) {
+    // we will automatically redirect to the external auth service
+    this.modal.show(LoginModal, {
+      model: {
+        isExternalLogin: true,
+        externalLoginMethod: provider,
+        signup: true,
+      },
+    });
+  }
 }
