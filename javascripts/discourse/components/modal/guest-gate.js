@@ -14,6 +14,8 @@ export default class extends Component {
     event?.preventDefault();
     this.modal.show(LoginModal, {
       model: {
+        showNotActivated: (props) => getOwner(this).lookup("controller:application").send("showNotActivated", props),
+        showCreateAccount: (props) => getOwner(this).lookup("controller:application").send("showCreateAccount", props),
         canSignUp: getOwner(this).lookup("controller:application").canSignUp,
       },
     });
