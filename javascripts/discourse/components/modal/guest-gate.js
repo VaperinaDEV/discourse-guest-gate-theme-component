@@ -12,16 +12,11 @@ export default class extends Component {
   @action
   showLoginGate(event) {
     event?.preventDefault();
-    const applicationController = getOwner(this).lookup("controller:application");
     this.modal.show(LoginModal, {
       model: {
-        ...(this.includeExternalLoginMethods && {
-          isExternalLogin: true,
-          externalLoginMethod: this.externalLoginMethods[0],
-        }),
         showNotActivated: (props) => this.send("showNotActivated", props),
         showCreateAccount: (props) => this.send("showCreateAccount", props),
-        canSignUp: applicationController.canSignUp,,
+        canSignUp: getOwner(this).lookup("controller:application").canSignUp,
       },
     });
   }
