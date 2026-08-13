@@ -2,134 +2,253 @@ url_for_show:
   type: list
   list_type: simple
   default: "/t/*"
-  description: "Enter paths that should display the Guest Gate modal.<br>Add <code>*</code> to the end of the path as a wildcard.<br>For example: <br> All page: <code>*</code> <br> Homepage: <code>/</code> <br> Latest: <code>/latest</code> <br> Topics: <code>/t/*</code> <br> Categories: <code>/c/*</code>"
+  description: "Enter paths that can trigger the Guest Gate. Add <code>*</code> to the end for prefix matching. Examples: <code>*</code>, <code>/</code>, <code>/latest</code>, <code>/t/*</code>, <code>/c/*</code>."
+
 url_for_hide:
   type: list
   list_type: simple
   default: "/login*|/u/*|/session*|/invites/*|/about|/faq|/faq#*|/guidelines|/guidelines#*|/tos|/tos#*|/privacy|/privacy#*"
-  description: "Enter paths that should hide the Guest Gate modal.<br>Add <code>*</code> to the end of the path as a wildcard.<br>For example: <br> Terms of Service page: <code>/tos</code> <br> Specific topic: <code>/t/tos/99999*</code> <br> Added some urls to avoid unexpected behavior..."
-max_guest_topic_views:
-  type: string
-  default: "1"
-  description: "Number of topic views until gate displays. After the gate first appears, it appears randomly between 1 and this number."
-dismissable_false:
-  type: bool
-  default: false
-  description: "Removes the close button, which prevents visitors from closing it."
+  description: "Enter paths where the Guest Gate must never display. Hide patterns always take precedence over the show list."
+
+gate_trigger_mode:
+  type: enum
+  default: page_views
+  choices:
+    - page_views
+    - time
+    - scroll
+    - lightbox
+    - any
+  description: "Choose what triggers the Guest Gate. Any uses the first configured trigger to fire."
+
+page_view_threshold:
+  type: integer
+  default: 1
+  min: 1
+  description: "Number of eligible page views required before the gate can appear."
+
+time_threshold_seconds:
+  type: integer
+  default: 30
+  min: 1
+  description: "Number of seconds spent on an eligible page before the gate can appear."
+
+scroll_threshold_percent:
+  type: integer
+  default: 50
+  min: 1
+  max: 100
+  description: "Percentage of an eligible page that must be scrolled before the gate can appear."
+
+gate_show_delay_ms:
+  type: integer
+  default: 0
+  min: 0
+  description: "Delay the modal after a trigger fires, in milliseconds. 500-1000ms is a good starting point for a softer UX."
+
+gate_repeat_mode:
+  type: enum
+  default: repeat_trigger
+  choices:
+    - repeat_trigger
+    - random_page_views
+    - once_per_session
+  description: "Control what happens after the gate has already appeared. Random page views is only used with page-view based triggers."
+
+repeat_page_view_threshold:
+  type: integer
+  default: 3
+  min: 1
+  description: "Maximum page views used by the random repeat mode. The next gate appears after a random number from 1 to this value."
+
 gate_show_only_once:
   type: bool
   default: false
-  description: "Guest Gate modal show only once per session."
+  description: "Legacy compatibility option. When enabled, show the Guest Gate at most once per browser session."
+
+dismissable:
+  type: bool
+  default: true
+  description: "Allow visitors to close the Guest Gate."
+
+gate_modal_size:
+  type: enum
+  default: standard
+  choices:
+    - compact
+    - standard
+    - wide
+  description: "Choose the overall width of the Guest Gate modal."
+
+gate_body_alignment:
+  type: enum
+  default: center
+  choices:
+    - left
+    - center
+    - right
+  description: "Horizontal alignment for the standard Guest Gate content and social login buttons."
+
 gate_show_when_thumbnail_clicked:
   type: bool
   default: false
-  description: "Guest Gate modal show only when visitor clicks lightbox image thumbnail. It prevents visitors to view the full resolution image without Log In or Sign Up."
+  description: "Legacy shortcut. Equivalent to using lightbox as the trigger mode."
+
 use_gate_buttons:
   type: bool
   default: false
-  description: "Use buttons on modal footer instead of links."
+  description: "Use buttons in the modal footer instead of text links."
+
 login_button_style:
   type: enum
   default: btn-primary
   choices:
+    - btn-primary
     - btn-default
-  description: "Guest Gate Login button style. btn-primary is a blue (tertiary) colored button by default. btn-default is a grey (primary-low) colored button by default."
+  description: "Guest Gate Login button style."
+
 signup_button_style:
   type: enum
-  default: btn-default
+  default: btn-primary
   choices:
     - btn-primary
-  description: "Guest Gate Signup button style. btn-primary is a blue (tertiary) colored button by default. btn-default is a grey (primary-low) colored button by default."
+    - btn-default
+  description: "Guest Gate Signup button style."
+
 login_icon:
   type: string
   default: "user"
-  description: "Add icon to Log In button."
+  description: "Font Awesome icon for the Log In button."
+
 signup_icon:
   type: string
   default: "right-to-bracket"
-  description: "Add icon to Sign Up button."
-svg_icons: 
+  description: "Font Awesome icon for the Sign Up button."
+
+svg_icons:
+  type: list
+  list_type: compact
   default: ""
-  type: "list"
-  list_type: "compact"
-  description: "List of FontAwesome 6 icons used in this theme component"
+  description: "List of Font Awesome icons used by this theme component."
+
 custom_url_enabled:
   type: bool
   default: false
-  description: "Enable the custom login url and custom signup url options. The normal behaviour (if you leave this option unchecked) is for the Login or Sign Up modal to appear on the current topic page."
+  description: "Use custom URLs for Login and Sign Up instead of Discourse's native actions."
+
 custom_login_url:
   type: string
   default: "/login"
-  description: "For example, /login is the home page with the “Login” modal displayed."
+  description: "Login destination when custom URLs are enabled."
+
 custom_signup_url:
   type: string
   default: "/signup"
-  description: "For example, /signup is the home page with the “Sign Up” modal displayed."
+  description: "Sign Up destination when custom URLs are enabled."
+
 enable_discourse_connect_signup:
   type: bool
   default: false
-  description: "Add a Sign Up button to Discourse Connect. With this you can add a different external url for registration etc." 
+  description: "Add a separate Sign Up button when Discourse Connect is enabled."
+
 discourse_connect_signup_url:
   type: string
   default: ""
-  description: "Paste a URL for Discourse Connect Sign Up button."
-gate_footer_position:
-  default: center
+  description: "URL used by the Discourse Connect Sign Up button."
+
+gate_title_visibility:
   type: enum
+  default: block
+  choices:
+    - block
+    - none
+  description: "Visibility of the Guest Gate modal title."
+
+gate_title_position:
+  type: enum
+  default: unset
+  choices:
+    - unset
+    - auto
+  description: "Modal title margin positioning."
+
+gate_footer_position:
+  type: enum
+  default: center
   choices:
     - left
+    - center
     - right
-  description: "Footer buttons/links position."
+  description: "Horizontal alignment of the Guest Gate footer."
+
 custom_gate_enabled:
   type: bool
   default: false
-  description: "Enable it if you want to customize the modal."
+  description: "Enable the custom Guest Gate design."
+
 custom_gate_image:
   type: upload
   default: ""
-  description: "Upload an image to display at the top of the modal."
+  description: "Image displayed above the custom Guest Gate text."
+
+custom_gate_image_alt:
+  type: string
+  default: ""
+  description: "Alternative text for the custom Guest Gate image."
+
 custom_gate_image_width:
   type: string
   default: "150px"
-  description: "The uploaded image width. You can use px, % etc, e.g. 100% will add a full modal width (minus padding) image."
+  description: "Width of the custom Guest Gate image. Examples: <code>150px</code>, <code>50%</code>, <code>100%</code>."
+
 custom_gate_image_position:
-  default: center
   type: enum
+  default: center
   choices:
     - left
+    - center
     - right
-  description: "Custom gate image position."
+  description: "Alignment of the custom Guest Gate image."
+
 custom_gate_big_text_position:
-  default: center
   type: enum
+  default: center
   choices:
     - left
+    - center
     - right
-  description: "Custom gate big text (h2) position."
+  description: "Alignment of the custom Guest Gate heading."
+
 custom_gate_little_text_position:
-  default: center
   type: enum
+  default: center
   choices:
     - left
+    - center
     - right
-  description: "Custom gate little text (p) position."
+  description: "Alignment of the custom Guest Gate text."
+
 custom_gate_big_text_color:
   type: string
   default: "var(--primary)"
-  description: "The “big text” appears below the image. You can set the color of the text."
+  description: "Color of the custom Guest Gate heading."
+
 custom_gate_little_text_color:
   type: string
   default: "var(--primary)"
-  description: "The “little text” appears below the big text. You can set the color of the text."
+  description: "Color of the custom Guest Gate text."
+
 custom_gate_background_color:
   type: string
   default: "var(--secondary)"
-  description: "Change the modal background color."
+  description: "Background color of the custom Guest Gate modal."
+
 custom_gate_footer_text_color:
   type: string
   default: "var(--primary-medium)"
-  description: "Change the footer text color. This applies if the use gate buttons setting is disabled and you have set up a custom gate."
+  description: "Footer text color when custom gate styling is enabled."
+
 custom_gate_link_color:
   type: string
   default: "var(--primary-medium)"
-  description: "Change the footer link color. This applies if the use gate buttons setting is disabled and you have set up a custom gate."
+  description: "Footer link color when custom gate styling is enabled."

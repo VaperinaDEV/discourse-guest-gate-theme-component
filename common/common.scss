@@ -1,86 +1,138 @@
+@use "lib/viewport";
+
 .d-modal.gate {
-  // if custom gate enabled
-  &.custom-gate {
-    .d-modal__container {
-      background-color: #{$custom_gate_background_color};
-    }
-    .d-modal__footer {
-      color: #{$custom_gate_footer_text_color};
-      .btn-transparent {
-        color: #{$custom_gate_link_color};
-      }
-    }
-    .custom-gate-content {
-      text-align: #{$custom_gate_image_position};
-      img {
-        width: #{$custom_gate_image_width};
-        height: auto;
-        margin-bottom: 0.75em;
-      }
-      h2 {
-        color: #{$custom_gate_big_text_color};
-        text-align: #{$custom_gate_big_text_position};
-      }
-      p {
-        color: #{$custom_gate_little_text_color};
-        text-align: #{$custom_gate_little_text_position};
-      }
-    }
-  }
   .d-modal__container {
+    width: 90vw;
+    max-width: 32rem;
     background-color: var(--secondary);
   }
+
+  &.gate-size-compact .d-modal__container {
+    max-width: 24rem;
+  }
+
+  &.gate-size-wide .d-modal__container {
+    max-width: 44rem;
+  }
+
   .d-modal__header {
     border-bottom: none;
+
+    .d-modal__title {
+      display: #{$gate_title_visibility};
+      margin: #{$gate_title_position};
+    }
   }
+
   .d-modal__body {
     padding: 0 1em;
   }
+
   .d-modal__footer {
-    color: var(--primary-medium);
     justify-content: #{$gate_footer_position};
+    color: var(--primary-medium);
+
     .btn-transparent {
+      margin: 0 0.25em;
+      padding: 0;
       color: var(--primary-medium);
       outline: none;
-      padding: 0;
-      margin: 0 0.25em;
     }
   }
+
+  .guest-gate-copy,
+  .custom-gate-content {
+    text-align: #{$gate_body_alignment};
+  }
+
+  .guest-gate-copy {
+    p:last-child {
+      margin-bottom: 0.75em;
+    }
+  }
+
   #login-buttons {
+    width: 100%;
     margin-bottom: 0.75em;
-    text-align: center;
+    text-align: #{$gate_body_alignment};
+
     .btn-social {
       margin: 0.25em;
-      .mobile-view & {
-        width: 100%;
-      }
+
       &:focus,
       &:hover {
         background: var(--secondary);
         color: var(--primary);
+
         .d-icon {
           color: var(--primary);
         }
       }
     }
-    .mobile-view & {
-      width: 100%;
+  }
+
+  &.custom-gate {
+    .d-modal__container {
+      background-color: #{$custom_gate_background_color};
+    }
+
+    .d-modal__footer {
+      color: #{$custom_gate_footer_text_color};
+
+      .btn-transparent {
+        color: #{$custom_gate_link_color};
+      }
+    }
+
+    .custom-gate-content {
+      display: flex;
+      flex-direction: column;
+
+      img {
+        display: block;
+        align-self: #{$custom_gate_image_position};
+        width: #{$custom_gate_image_width};
+        max-width: 100%;
+        height: auto;
+        margin-bottom: 0.75em;
+      }
+
+      h2 {
+        margin-top: 0;
+        color: #{$custom_gate_big_text_color};
+        text-align: #{$custom_gate_big_text_position};
+      }
+
+      .custom-gate-little-text {
+        color: #{$custom_gate_little_text_color};
+        text-align: #{$custom_gate_little_text_position};
+
+        p:last-child {
+          margin-bottom: 0;
+        }
+      }
     }
   }
 }
 
-@if $gate-show-when-thumbnail-clicked == "true" {
+@if $gate-trigger-mode == "lightbox" or $gate-show-when-thumbnail-clicked == "true" {
   .anon {
-    // Old lightbox
-    .mfp-wrap {
-      button,
-      .mfp-preloader {
-        display: none;
-      }
-    }
-    // New lightbox
     #discourse-lightbox {
       display: none;
+    }
+  }
+}
+
+@include viewport.until(sm) {
+  .d-modal.gate {
+    .d-modal__container {
+      width: calc(100vw - 2rem);
+    }
+
+    #login-buttons {
+      .btn-social {
+        width: 100%;
+      }
     }
   }
 }

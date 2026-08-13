@@ -3,15 +3,12 @@
   "component": true,
   "license_url": null,
   "about_url": "https://github.com/VaperinaDEV/discourse-guest-gate-theme-component",
-  "authors": "Vinoth Kannan (vinothkannan@vinkas.com) and jgujgu and michael@discoursehosting.com",
-  "theme_version": null,
-  "minimum_discourse_version": null,
+  "authors": "Vinoth Kannan, jgujgu, michael@discoursehosting.com, and Don",
+  "theme_version": "2.0",
+  "minimum_discourse_version": "3.1.0.beta6",
   "maximum_discourse_version": null,
-  "assets": {
-  },
-  "color_schemes": {
-  },
-  "modifiers": {
-  },
+  "assets": {},
+  "color_schemes": {},
+  "modifiers": {},
   "learn_more": "https://meta.discourse.org/t/beginners-guide-to-using-discourse-themes/91966"
 }

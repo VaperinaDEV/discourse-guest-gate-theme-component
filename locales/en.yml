@@ -10,3 +10,4 @@ en:
   custom_gate:
     big_text: "Custom Big text"
     little_text: "Custom Little text"
+    image_alt: ""
