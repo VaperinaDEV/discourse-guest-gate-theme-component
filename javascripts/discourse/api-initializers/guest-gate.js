@@ -1,6 +1,7 @@
 import { apiInitializer } from "discourse/lib/api";
 import GuestGateModal from "../components/modal/guest-gate";
 import { cleanupLightboxes } from "discourse/lib/lightbox";
+import { currentPath, trackGuestGateEvent } from "../lib/guest-gate-analytics";
 
 const SESSION_KEY = "discourse-guest-gate:shown";
 
@@ -91,14 +92,21 @@ function createGateController(api, modal) {
     return true;
   }
 
-  function showGate() {
+  function showGate(reason) {
     if (!canShowGate()) {
       return false;
     }
 
+    const path = currentPath();
+
+    trackGuestGateEvent("guest_gate_shown", {
+      guest_gate_reason: reason,
+      guest_gate_path: path,
+    });
+
     modalOpen = true;
     modal
-      .show(GuestGateModal)
+      .show(GuestGateModal, { model: { reason, path } })
       .finally(() => {
         modalOpen = false;
       });

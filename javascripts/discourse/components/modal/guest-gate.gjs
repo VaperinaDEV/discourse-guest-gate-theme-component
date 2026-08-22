@@ -1,4 +1,6 @@
 import Component from "@glimmer/component";
+import { fn } from "@ember/helper";
+import { on } from "@ember/modifier";
 import { action } from "@ember/object";
 import { service } from "@ember/service";
 import { htmlSafe } from "@ember/template";
@@ -9,6 +11,7 @@ import DButton from "discourse/components/d-button";
 import DModal from "discourse/components/d-modal";
 import LoginButtons from "discourse/components/login-buttons";
 import { i18n } from "discourse-i18n";
+import { trackGuestGateEvent } from "../../lib/guest-gate-analytics";
 
 export default class GuestGateModal extends Component {
   @service siteSettings;
@@ -101,14 +104,37 @@ export default class GuestGateModal extends Component {
 
   @action
   externalLogin(provider) {
+    this.trackClick(`external_${provider.name || provider}`);
+
     // External providers are started in account-creation context, matching
     // Discourse's LoginButtons behavior for guests.
     this.login.externalLogin(provider, { signup: true });
   }
 
+  @action
+  trackClick(clickAction) {
+    trackGuestGateEvent("guest_gate_click", {
+      guest_gate_click_action: clickAction,
+      guest_gate_reason: this.args.model?.reason,
+      guest_gate_path: this.args.model?.path,
+    });
+  }
+
+  @action
+  trackAndRun(routeActionFn, clickAction) {
+    this.trackClick(clickAction);
+    routeActionFn?.();
+  }
+
+  @action
+  trackedCloseModal() {
+    this.trackClick("dismiss");
+    this.args.closeModal();
+  }
+
   <template>
     <DModal
-      @closeModal={{@closeModal}}
+      @closeModal={{this.trackedCloseModal}}
       @title={{this.guestGateModalTitle}}
       @dismissable={{settings.dismissable}}
       class={{this.modalClass}}
@@ -148,7 +174,7 @@ export default class GuestGateModal extends Component {
               @class={{settings.login_button_style}}
               @icon={{settings.login_icon}}
               @translatedLabel={{this.guestGateSsoLogin}}
-              @action={{routeAction "showLogin"}}
+              @action={{fn this.trackAndRun (routeAction "showLogin") "sso_login"}}
             />
 
             {{#if this.hasDiscourseConnectSignup}}
@@ -157,13 +183,14 @@ export default class GuestGateModal extends Component {
                 @icon={{settings.signup_icon}}
                 @translatedLabel={{this.guestGateSsoSignup}}
                 @href={{settings.discourse_connect_signup_url}}
+                {{on "click" (fn this.trackClick "sso_signup")}}
               />
             {{/if}}
           {{else}}
             <DButton
               @class="btn-transparent"
               @translatedLabel={{this.guestGateSsoLogin}}
-              @action={{routeAction "showLogin"}}
+              @action={{fn this.trackAndRun (routeAction "showLogin") "sso_login"}}
             />
 
             {{#if this.hasDiscourseConnectSignup}}
@@ -172,6 +199,7 @@ export default class GuestGateModal extends Component {
                 @class="btn-transparent"
                 @translatedLabel={{this.guestGateSsoSignup}}
                 @href={{settings.discourse_connect_signup_url}}
+                {{on "click" (fn this.trackClick "sso_signup")}}
               />
             {{/if}}
           {{/if}}
@@ -182,25 +210,27 @@ export default class GuestGateModal extends Component {
               @icon={{settings.login_icon}}
               @translatedLabel={{this.guestGateLogin}}
               @href={{settings.custom_login_url}}
+              {{on "click" (fn this.trackClick "login")}}
             />
             <DButton
               @class={{settings.signup_button_style}}
               @icon={{settings.signup_icon}}
               @translatedLabel={{this.guestGateSignup}}
               @href={{settings.custom_signup_url}}
+              {{on "click" (fn this.trackClick "signup")}}
             />
           {{else}}
             <DButton
               @class={{settings.login_button_style}}
               @icon={{settings.login_icon}}
               @translatedLabel={{this.guestGateLogin}}
-              @action={{routeAction "showLogin"}}
+              @action={{fn this.trackAndRun (routeAction "showLogin") "login"}}
             />
             <DButton
               @class={{settings.signup_button_style}}
               @icon={{settings.signup_icon}}
               @translatedLabel={{this.guestGateSignup}}
-              @action={{routeAction "showCreateAccount"}}
+              @action={{fn this.trackAndRun (routeAction "showCreateAccount") "signup"}}
             />
           {{/if}}
         {{else}}
@@ -209,24 +239,26 @@ export default class GuestGateModal extends Component {
               @class="btn-transparent"
               @translatedLabel={{this.guestGateLogin}}
               @href={{settings.custom_login_url}}
+              {{on "click" (fn this.trackClick "login")}}
             />
             {{this.guestGateOr}}
             <DButton
               @class="btn-transparent"
               @translatedLabel={{this.guestGateSignup}}
               @href={{settings.custom_signup_url}}
+              {{on "click" (fn this.trackClick "signup")}}
             />
           {{else}}
             <DButton
               @class="btn-transparent"
               @translatedLabel={{this.guestGateLogin}}
-              @action={{routeAction "showLogin"}}
+              @action={{fn this.trackAndRun (routeAction "showLogin") "login"}}
             />
             {{this.guestGateOr}}
             <DButton
               @class="btn-transparent"
               @translatedLabel={{this.guestGateSignup}}
-              @action={{routeAction "showCreateAccount"}}
+              @action={{fn this.trackAndRun (routeAction "showCreateAccount") "signup"}}
             />
           {{/if}}
         {{/if}}

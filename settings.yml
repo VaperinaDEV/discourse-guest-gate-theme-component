@@ -252,3 +252,15 @@ custom_gate_link_color:
   type: string
   default: "var(--primary-medium)"
   description: "Footer link color when custom gate styling is enabled."
+
+# --- Analytics -------------------------------------------------------------
+
+enable_analytics:
+  type: bool
+  default: false
+  description: "Track Guest Gate impressions (when it appears, on which page, and why) and clicks (Log In / Sign Up / dismiss) for analytics. Events are pushed to window.dataLayer (Google Tag Manager / GA4) and dispatched as a `discourse-guest-gate:analytics` browser event so you can also forward them to your own tool. No personal data is collected."
+
+analytics_debug_logging:
+  type: bool
+  default: false
+  description: "Also print every Guest Gate analytics event to the browser console. Useful while setting up a Google Tag Manager trigger; turn off in production."
