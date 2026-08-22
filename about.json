@@ -5,7 +5,7 @@
   "about_url": "https://github.com/VaperinaDEV/discourse-guest-gate-theme-component",
   "authors": "Vinoth Kannan, jgujgu, michael@discoursehosting.com, and Don",
   "theme_version": "2.0",
-  "minimum_discourse_version": "3.1.0.beta6",
+  "minimum_discourse_version": "3.2.0",
   "maximum_discourse_version": null,
   "assets": {},
   "color_schemes": {},

@@ -30,7 +30,6 @@ function createGateController(api, modal) {
 
   function start() {
     api.onPageChange((url) => {
-      clearPageTimer();
       clearShowTimer();
       resetPageTriggers();
 
@@ -57,18 +56,6 @@ function createGateController(api, modal) {
     });
 
     if (usesLightbox()) {
-      api.onAppEvent("lightbox:opened", () => {
-        if (!currentPageEligible || shouldStopForSession()) {
-          return;
-        }
-
-        if (scheduleGate("lightbox")) {
-          cleanupLightboxes();
-        }
-      });
-    }
-
-    if (settings.gate_show_when_thumbnail_clicked && triggerMode !== "lightbox") {
       api.onAppEvent("lightbox:opened", () => {
         if (!currentPageEligible || shouldStopForSession()) {
           return;
@@ -256,14 +243,6 @@ function createGateController(api, modal) {
   }
 
   return { start };
-}
-
-function getTriggerMode() {
-  if (settings.gate_show_when_thumbnail_clicked) {
-    return "lightbox";
-  }
-
-  return settings.gate_trigger_mode || "page_views";
 }
 
 function getRepeatMode() {

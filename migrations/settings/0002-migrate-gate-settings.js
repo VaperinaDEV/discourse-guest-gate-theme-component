@@ -14,6 +14,7 @@ export default function migrate(settings) {
 
   if (settings.get("gate_show_when_thumbnail_clicked")) {
     settings.set("gate_trigger_mode", "lightbox");
+    settings.set("gate_show_when_thumbnail_clicked", false);
   }
 
   return settings;

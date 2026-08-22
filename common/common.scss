@@ -115,7 +115,7 @@
   }
 }
 
-@if $gate-trigger-mode == "lightbox" or $gate-show-when-thumbnail-clicked == "true" {
+@if $gate-trigger-mode == "lightbox" or $gate-show-when-thumbnail-clicked {
   .anon {
     #discourse-lightbox {
       display: none;
