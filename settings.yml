@@ -19,7 +19,7 @@ gate_trigger_mode:
     - scroll
     - lightbox
     - any
-  description: "Choose what triggers the Guest Gate. Any uses the first configured trigger to fire."
+  description: "Choose what triggers the Guest Gate. When set to 'any', the gate is triggered by whichever configured trigger condition is met first."
 
 page_view_threshold:
   type: integer
