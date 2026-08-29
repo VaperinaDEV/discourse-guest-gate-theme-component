@@ -1,7 +1,6 @@
 en:
   guest_gate:
     title: "Please Sign Up!"
-    sign_up_email: "Sign Up with Email"
     sign_up: "Sign Up"
     log_in: "I already have an account"
     sso_log_in: "Log In"
@@ -10,3 +9,4 @@ en:
   custom_gate:
     big_text: "Custom Big text"
     little_text: "Custom Little text"
+    image_alt: ""

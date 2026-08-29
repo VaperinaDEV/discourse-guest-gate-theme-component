@@ -1,4 +1,6 @@
 import Component from "@glimmer/component";
+import { fn } from "@ember/helper";
+import { on } from "@ember/modifier";
 import { action } from "@ember/object";
 import { service } from "@ember/service";
 import { htmlSafe } from "@ember/template";
@@ -8,79 +10,152 @@ import replaceEmoji from "discourse/helpers/replace-emoji";
 import DButton from "discourse/components/d-button";
 import DModal from "discourse/components/d-modal";
 import LoginButtons from "discourse/components/login-buttons";
-import I18n from "discourse-i18n";
+import { i18n } from "discourse-i18n";
+import { trackGuestGateEvent } from "../../lib/guest-gate-analytics";
 
-export default class GuestGateModal extends Component {  
+export default class GuestGateModal extends Component {
   @service siteSettings;
   @service login;
 
+  get isCustomGate() {
+    return settings.custom_gate_enabled;
+  }
+
+  get hasCustomImage() {
+    return Boolean(settings.custom_gate_image);
+  }
+
   get guestGateModalTitle() {
-    return I18n.t(themePrefix("guest_gate.title"));
+    return i18n(themePrefix("guest_gate.title"));
   }
 
   get customBigText() {
-    return htmlSafe(I18n.t(themePrefix("custom_gate.big_text")));
+    return htmlSafe(i18n(themePrefix("custom_gate.big_text")));
   }
 
   get customLittleText() {
-    return htmlSafe(I18n.t(themePrefix("custom_gate.little_text")));
+    return htmlSafe(i18n(themePrefix("custom_gate.little_text")));
+  }
+
+  get customImageAlt() {
+    return settings.custom_gate_image_alt || i18n(themePrefix("custom_gate.image_alt"));
+  }
+
+  get modalSize() {
+    return settings.gate_modal_size || "standard";
+  }
+
+  get bodyAlignment() {
+    return settings.gate_body_alignment || "center";
+  }
+
+  get modalClass() {
+    return concatClass(
+      "gate",
+      this.isCustomGate ? "custom-gate" : null,
+      `gate-size-${this.modalSize}`,
+      `gate-align-${this.bodyAlignment}`
+    );
   }
 
   get signupCtaIntro() {
-    return replaceEmoji(I18n.t("signup_cta.intro"));
+    return replaceEmoji(i18n("signup_cta.intro"));
   }
 
   get signupCtaValueProp() {
-    return replaceEmoji(I18n.t("signup_cta.value_prop"));
+    return replaceEmoji(i18n("signup_cta.value_prop"));
   }
 
   get guestGateLogin() {
-    return I18n.t(themePrefix("guest_gate.log_in"));
+    return i18n(themePrefix("guest_gate.log_in"));
   }
 
   get guestGateSignup() {
-    return I18n.t(themePrefix("guest_gate.sign_up"));
+    return i18n(themePrefix("guest_gate.sign_up"));
   }
 
   get guestGateSsoLogin() {
-    return I18n.t(themePrefix("guest_gate.sso_log_in"));
+    return i18n(themePrefix("guest_gate.sso_log_in"));
   }
 
   get guestGateSsoSignup() {
-    return I18n.t(themePrefix("guest_gate.sso_sign_up"));
+    return i18n(themePrefix("guest_gate.sso_sign_up"));
   }
 
   get guestGateOr() {
-    return I18n.t(themePrefix("guest_gate.or"));
+    return i18n(themePrefix("guest_gate.or"));
+  }
+
+  get usesDiscourseConnect() {
+    return this.siteSettings.enable_discourse_connect;
+  }
+
+  get hasDiscourseConnectSignup() {
+    return this.usesDiscourseConnect && settings.enable_discourse_connect_signup;
+  }
+
+  get usesCustomUrls() {
+    return settings.custom_url_enabled;
+  }
+
+  get usesButtons() {
+    return settings.use_gate_buttons;
   }
 
   @action
   externalLogin(provider) {
-    // we will automatically redirect to the external auth service
+    this.trackClick(`external_${provider.name || provider}`);
+
+    // External providers are started in account-creation context, matching
+    // Discourse's LoginButtons behavior for guests.
     this.login.externalLogin(provider, { signup: true });
+  }
+
+  @action
+  trackClick(clickAction) {
+    trackGuestGateEvent("guest_gate_click", {
+      guest_gate_click_action: clickAction,
+      guest_gate_reason: this.args.model?.reason,
+      guest_gate_path: this.args.model?.path,
+    });
+  }
+
+  @action
+  trackAndRun(routeActionFn, clickAction) {
+    this.trackClick(clickAction);
+    routeActionFn?.();
+  }
+
+  @action
+  trackedCloseModal() {
+    this.trackClick("dismiss");
+    this.args.closeModal();
   }
 
   <template>
     <DModal
-      @closeModal={{@closeModal}}
+      @closeModal={{this.trackedCloseModal}}
       @title={{this.guestGateModalTitle}}
-      class={{concatClass
-        "gate"
-        (if settings.custom_gate_enabled "custom-gate")
-      }}
-      @dismissable={{if settings.dismissable_false false true}}
+      @dismissable={{settings.dismissable}}
+      class={{this.modalClass}}
     >
       <:body>
-        {{#if settings.custom_gate_enabled}}
+        {{#if this.isCustomGate}}
           <div class="custom-gate-content">
-            <img src="{{settings.custom_gate_image}}"/>
+            {{#if this.hasCustomImage}}
+              <img
+                src={{settings.custom_gate_image}}
+                alt={{this.customImageAlt}}
+                loading="lazy"
+                decoding="async"
+              />
+            {{/if}}
+
             <h2>{{this.customBigText}}</h2>
-            <p>{{this.customLittleText}}</p>
+            <div class="custom-gate-little-text">{{this.customLittleText}}</div>
           </div>
-        
         {{else}}
-        
-          <div>
+          <div class="guest-gate-copy">
             <p>{{this.signupCtaIntro}}</p>
             <p>{{this.signupCtaValueProp}}</p>
           </div>
@@ -91,109 +166,100 @@ export default class GuestGateModal extends Component {
           @context="create-account"
         />
       </:body>
-      
+
       <:footer>
-        {{#if this.siteSettings.enable_discourse_connect}}
-          {{#if settings.use_gate_buttons}}
+        {{#if this.usesDiscourseConnect}}
+          {{#if this.usesButtons}}
             <DButton
               @class={{settings.login_button_style}}
               @icon={{settings.login_icon}}
               @translatedLabel={{this.guestGateSsoLogin}}
-              @action={{routeAction "showLogin"}}
+              @action={{fn this.trackAndRun (routeAction "showLogin") "sso_login"}}
             />
-            {{#if settings.enable_discourse_connect_signup}}
+
+            {{#if this.hasDiscourseConnectSignup}}
               <DButton
                 @class={{settings.signup_button_style}}
                 @icon={{settings.signup_icon}}
                 @translatedLabel={{this.guestGateSsoSignup}}
                 @href={{settings.discourse_connect_signup_url}}
+                {{on "click" (fn this.trackClick "sso_signup")}}
               />
             {{/if}}
-            
           {{else}}
-            
             <DButton
               @class="btn-transparent"
               @translatedLabel={{this.guestGateSsoLogin}}
-              @action={{routeAction "showLogin"}}
+              @action={{fn this.trackAndRun (routeAction "showLogin") "sso_login"}}
             />
-    
-            {{#if settings.enable_discourse_connect_signup}}
+
+            {{#if this.hasDiscourseConnectSignup}}
               {{this.guestGateOr}}
               <DButton
                 @class="btn-transparent"
                 @translatedLabel={{this.guestGateSsoSignup}}
                 @href={{settings.discourse_connect_signup_url}}
+                {{on "click" (fn this.trackClick "sso_signup")}}
               />
             {{/if}}
           {{/if}}
-                  
-        {{else}}
-                  
-          {{#if settings.use_gate_buttons}}
-            {{#if settings.custom_url_enabled}}
-              <DButton
-                @class={{settings.login_button_style}}
-                @icon={{settings.login_icon}}
-                @translatedLabel={{this.guestGateLogin}}
-                @href={{settings.custom_login_url}}
-              />
-              <DButton
-                @class={{settings.signup_button_style}}
-                @icon={{settings.signup_icon}}
-                @translatedLabel={{this.guestGateSignup}}
-                @href={{settings.custom_signup_url}}
-              />
-              
-            {{else}}
-              
-              <DButton
-                @class={{settings.login_button_style}}
-                @icon={{settings.login_icon}}
-                @translatedLabel={{this.guestGateLogin}}
-                @action={{routeAction "showLogin"}}
-              />
-              <DButton
-                @class={{settings.signup_button_style}}
-                @icon={{settings.signup_icon}}
-                @translatedLabel={{this.guestGateSignup}}
-                @action={{routeAction "showCreateAccount"}}
-              />
-            {{/if}}
-                
+        {{else if this.usesButtons}}
+          {{#if this.usesCustomUrls}}
+            <DButton
+              @class={{settings.login_button_style}}
+              @icon={{settings.login_icon}}
+              @translatedLabel={{this.guestGateLogin}}
+              @href={{settings.custom_login_url}}
+              {{on "click" (fn this.trackClick "login")}}
+            />
+            <DButton
+              @class={{settings.signup_button_style}}
+              @icon={{settings.signup_icon}}
+              @translatedLabel={{this.guestGateSignup}}
+              @href={{settings.custom_signup_url}}
+              {{on "click" (fn this.trackClick "signup")}}
+            />
           {{else}}
-              
-            {{#if settings.custom_url_enabled}}
-              <DButton
-                @class="btn-transparent"
-                @translatedLabel={{this.guestGateLogin}}
-                @href={{settings.custom_login_url}}
-              />
-    
-              {{this.guestGateOr}}
-              
-              <DButton
-                @class="btn-transparent"
-                @translatedLabel={{this.guestGateSignup}}
-                @href={{settings.custom_signup_url}}
-              />
-                  
-            {{else}}
-                
-              <DButton
-                @class="btn-transparent"
-                @translatedLabel={{this.guestGateLogin}}
-                @action={{routeAction "showLogin"}}
-              />
-    
-              {{this.guestGateOr}}
-    
-              <DButton
-                @class="btn-transparent"
-                @translatedLabel={{this.guestGateSignup}}
-                @action={{routeAction "showCreateAccount"}}
-              />
-            {{/if}}
+            <DButton
+              @class={{settings.login_button_style}}
+              @icon={{settings.login_icon}}
+              @translatedLabel={{this.guestGateLogin}}
+              @action={{fn this.trackAndRun (routeAction "showLogin") "login"}}
+            />
+            <DButton
+              @class={{settings.signup_button_style}}
+              @icon={{settings.signup_icon}}
+              @translatedLabel={{this.guestGateSignup}}
+              @action={{fn this.trackAndRun (routeAction "showCreateAccount") "signup"}}
+            />
+          {{/if}}
+        {{else}}
+          {{#if this.usesCustomUrls}}
+            <DButton
+              @class="btn-transparent"
+              @translatedLabel={{this.guestGateLogin}}
+              @href={{settings.custom_login_url}}
+              {{on "click" (fn this.trackClick "login")}}
+            />
+            {{this.guestGateOr}}
+            <DButton
+              @class="btn-transparent"
+              @translatedLabel={{this.guestGateSignup}}
+              @href={{settings.custom_signup_url}}
+              {{on "click" (fn this.trackClick "signup")}}
+            />
+          {{else}}
+            <DButton
+              @class="btn-transparent"
+              @translatedLabel={{this.guestGateLogin}}
+              @action={{fn this.trackAndRun (routeAction "showLogin") "login"}}
+            />
+            {{this.guestGateOr}}
+            <DButton
+              @class="btn-transparent"
+              @translatedLabel={{this.guestGateSignup}}
+              @action={{fn this.trackAndRun (routeAction "showCreateAccount") "signup"}}
+            />
           {{/if}}
         {{/if}}
       </:footer>
