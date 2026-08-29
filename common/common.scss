@@ -1,18 +1,19 @@
 @use "lib/viewport";
 
 .d-modal.gate {
+  
+  @include viewport.from(sm) {
+    --modal-max-width: 32rem;
+    &.gate-size-compact {
+      --modal-max-width: 24rem;
+    }  
+    &.gate-size-wide {
+      --modal-max-width: 44rem;
+    }
+  }
+  
   .d-modal__container {
-    width: 90vw;
-    max-width: 32rem;
     background-color: var(--secondary);
-  }
-
-  &.gate-size-compact .d-modal__container {
-    max-width: 24rem;
-  }
-
-  &.gate-size-wide .d-modal__container {
-    max-width: 44rem;
   }
 
   .d-modal__header {
@@ -68,6 +69,10 @@
           color: var(--primary);
         }
       }
+
+      @include viewport.until(sm) {
+        width: 100%;
+      }
     }
   }
 
@@ -119,20 +124,6 @@
   .anon {
     #discourse-lightbox {
       display: none;
-    }
-  }
-}
-
-@include viewport.until(sm) {
-  .d-modal.gate {
-    .d-modal__container {
-      width: calc(100vw - 2rem);
-    }
-
-    #login-buttons {
-      .btn-social {
-        width: 100%;
-      }
     }
   }
 }
